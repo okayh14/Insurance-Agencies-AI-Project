@@ -251,7 +251,7 @@ from pathlib import Path
 
 # --- LLM ---
 OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-5.6-terra")
 
 # --- Service-Adressen (Container-Namen aus docker-compose) ---
 CASE_SERVICE_URL: str = os.getenv("CASE_SERVICE_URL", "http://case-service:8000")
@@ -336,7 +336,7 @@ Ausgabeformat, vier Blöcke, immer gleich lang — dadurch entstehen Spalten:
 
 [14:22:07] [validation] [case_0001] Pflichtangaben-Check -> unvollstaendig: schadensdatum
 [14:22:04] [validation] [CRM] Kunde K-1001 gefunden, Vertrag V-001 aktiv
-[14:22:06] [validation] [LLM] Pflichtangaben-Check (gpt-4o-mini)
+[14:22:06] [validation] [LLM] Pflichtangaben-Check (gpt-5.6-terra)
 [14:22:09] [validation] [-> WHATSAPP an 4917123456789] Guten Tag, fuer die Bearbeitung...
 [14:22:09] [validation] [-> NEXT] damage-service
 Die Sonderformen [CRM], [LLM], [-> KANAL] und [-> NEXT] heben sich absichtlich ab, weil sie Systemgrenzen markieren. separator() wird bei jeder neuen eingehenden Nachricht gerufen.
@@ -922,7 +922,7 @@ Ein einziges File im Root statt fünf fast identischer pro Service. Alle fünf b
 
 13.4 .env.example
 OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5.6-terra
 
 DATA_DIR=/app/data
 

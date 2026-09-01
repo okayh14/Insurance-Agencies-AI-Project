@@ -2,6 +2,6 @@ fastapi
 uvicorn
 pydantic
 httpx
-openai
+openai==3.6.0
 python-dotenv
 pytest
