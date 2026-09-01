@@ -7,6 +7,7 @@ SERVICE_WIDTH = 12
 TAG_WIDTH = 13
 OUTBOUND_PREVIEW = 60
 SEPARATOR_WIDTH = 78
+MAIL_PREFIX = "  | "
 
 
 class ServiceLogger:
@@ -47,6 +48,12 @@ class ServiceLogger:
         if len(einzeilig) > OUTBOUND_PREVIEW:
             einzeilig = einzeilig[:OUTBOUND_PREVIEW].rstrip() + "..."
         self._emit(f"-> {channel.upper()} an {address}", einzeilig)
+
+    def mail_body(self, text: str) -> None:
+        """Vollen Mailtext als Block ausgeben. Bewusst ohne _emit(),
+        damit das Spaltenformat der normalen Zeilen unangetastet bleibt."""
+        for zeile in text.splitlines():
+            print(f"{MAIL_PREFIX}{zeile}", flush=True)
 
     def next_service(self, target: str) -> None:
         """Weiterleitung an den nächsten Service (Choreografie sichtbar machen)."""

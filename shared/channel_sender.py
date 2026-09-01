@@ -36,6 +36,7 @@ class ChannelSender:
         """Mail an den Sachbearbeiter. Immer E-Mail an AGENT_EMAIL.
         1. Terminal-Ausgabe  2. append an case.outbound"""
         self.logger.outbound(Channel.EMAIL.value, AGENT_EMAIL, subject)
+        self.logger.mail_body(body)
         nachricht = OutboundMessage(
             sent_at=datetime.now(),
             recipient_type="agent",
