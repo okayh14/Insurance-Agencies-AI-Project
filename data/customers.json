@@ -1,0 +1,12 @@
+[
+  {"customer_number": "K-1001", "name": "Michael Bauer", "phone": "4917123456789", "email": "michael.bauer@gmx.de", "contracts": [{"contract_number": "V-001", "product": "KFZ Vollkasko", "status": "active", "deductible": 500}]},
+  {"customer_number": "K-1002", "name": "Sandra Hoffmann", "phone": "4917234567890", "email": "sandra.hoffmann@gmx.de", "contracts": [{"contract_number": "V-002", "product": "Hausratversicherung", "status": "active", "deductible": 250}]},
+  {"customer_number": "K-1003", "name": "Thomas Richter", "phone": "4917345678901", "email": "thomas.richter@gmx.de", "contracts": [{"contract_number": "V-003", "product": "Privathaftpflicht", "status": "active", "deductible": 150}]},
+  {"customer_number": "K-1004", "name": "Julia Wagner", "phone": "4917456789012", "email": "julia.wagner@gmx.de", "contracts": [{"contract_number": "V-004", "product": "KFZ Teilkasko", "status": "expired", "deductible": 300}]},
+  {"customer_number": "K-1005", "name": "Andreas Klein", "phone": "4917567890123", "email": "andreas.klein@gmx.de", "contracts": [{"contract_number": "V-005", "product": "KFZ Vollkasko", "status": "active", "deductible": 500}, {"contract_number": "V-006", "product": "Hausratversicherung", "status": "active", "deductible": 250}]},
+  {"customer_number": "K-1006", "name": "Petra Schulz", "phone": "4917678901234", "email": "petra.schulz@gmx.de", "contracts": [{"contract_number": "V-007", "product": "Wohngebäudeversicherung", "status": "active", "deductible": 1000}]},
+  {"customer_number": "K-1007", "name": "Daniel Fischer", "phone": "4917789012345", "email": "daniel.fischer@gmx.de", "contracts": [{"contract_number": "V-008", "product": "Glasversicherung", "status": "active", "deductible": 100}]},
+  {"customer_number": "K-1008", "name": "Nicole Weber", "phone": "4917890123456", "email": "nicole.weber@gmx.de", "contracts": [{"contract_number": "V-009", "product": "Hausratversicherung", "status": "active", "deductible": 250}, {"contract_number": "V-010", "product": "Privathaftpflicht", "status": "active", "deductible": 150}]},
+  {"customer_number": "K-1009", "name": "Markus Neumann", "phone": "4917901234567", "email": "markus.neumann@gmx.de", "contracts": [{"contract_number": "V-011", "product": "KFZ Vollkasko", "status": "cancelled", "deductible": 500}]},
+  {"customer_number": "K-1010", "name": "Christina Vogel", "phone": "4917012345678", "email": "christina.vogel@gmx.de", "contracts": [{"contract_number": "V-012", "product": "Wohngebäudeversicherung", "status": "active", "deductible": 1000}]}
+]
