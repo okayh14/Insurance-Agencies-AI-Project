@@ -1,0 +1,68 @@
+services:
+
+  case-service:
+    build:
+      context: .
+      dockerfile: services/case_service/Dockerfile
+    container_name: case-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn services.case_service.main:app --host 0.0.0.0 --port 8000
+
+  classifier-service:
+    build:
+      context: .
+      dockerfile: services/classifier_service/Dockerfile
+    container_name: classifier-service
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn services.classifier_service.main:app --host 0.0.0.0 --port 8000
+
+  validation-service:
+    build:
+      context: .
+      dockerfile: services/validation_service/Dockerfile
+    container_name: validation-service
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn services.validation_service.main:app --host 0.0.0.0 --port 8000
+
+  damage-service:
+    build:
+      context: .
+      dockerfile: services/damage_service/Dockerfile
+    container_name: damage-service
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn services.damage_service.main:app --host 0.0.0.0 --port 8000
+
+  support-service:
+    build:
+      context: .
+      dockerfile: services/support_service/Dockerfile
+    container_name: support-service
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn services.support_service.main:app --host 0.0.0.0 --port 8000
