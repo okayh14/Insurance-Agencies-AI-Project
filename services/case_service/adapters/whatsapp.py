@@ -10,7 +10,7 @@ from shared.models import CanonicalMessage, Channel
 class WhatsAppAdapter(ChannelAdapter):
     """{"from": "4917123456789",
         "text": {"body": "..."},
-        "timestamp": "1756645323"}"""
+        "timestamp": "1788181323"}"""
 
     def to_canonical(self, raw: dict[str, Any]) -> CanonicalMessage:
         return CanonicalMessage(

@@ -802,7 +802,7 @@ Adapter-Struktur echt, Transport simuliert. Kanal-Unterscheidung existiert an ge
 
 ```json
 # WhatsApp Rohformat
-{"from": "4917123456789", "text": {"body": "Hallo, ich hatte gestern einen Unfall."}, "timestamp": "1756645323"}
+{"from": "4917123456789", "text": {"body": "Hallo, ich hatte gestern einen Unfall."}, "timestamp": "1788181323"}
 
 # E-Mail Rohformat
 {"sender": "michael.bauer@gmx.de", "subject": "Schadenmeldung", "body_plain": "Guten Tag, ...", "date": "2026-08-31T14:22:03"}
