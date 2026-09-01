@@ -35,7 +35,7 @@ def build_body(case: Case, customer: dict[str, Any]) -> str:
     ]
 
     for name, wert in case.fields.collected.items():
-        teile.append(f"{_feldname(name)}:".ljust(FIELD_LABEL) + wert)
+        teile.append(_spalte(f"{_feldname(name)}:", wert, FIELD_LABEL))
 
     teile += [
         "",
@@ -80,7 +80,15 @@ def _abschnitt(titel: str) -> str:
 
 
 def _zeile(label: str, wert: str) -> str:
-    return label.ljust(LABEL) + wert
+    return _spalte(label, wert, LABEL)
+
+
+def _spalte(label: str, wert: str, breite: int) -> str:
+    """Label auf feste Breite. Laengere Labels bekommen ein einzelnes
+    Leerzeichen, damit der Wert nie am Doppelpunkt klebt."""
+    if len(label) >= breite:
+        return f"{label} {wert}"
+    return label.ljust(breite) + wert
 
 
 def _umbruch(label: str, text: str) -> str:

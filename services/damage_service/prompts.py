@@ -1,5 +1,6 @@
 """Zwei Prompts: Severity-Schaetzung und Fallzusammenfassung."""
 
+from shared.config import CURRENCY
 from shared.models import Case
 
 SEVERITY_SYSTEM = """Du schaetzt die Schwere eines gemeldeten Versicherungsschadens ein.
@@ -41,7 +42,7 @@ def build_summary_prompt(case: Case, severity: str, severity_reason: str) -> str
         f"Falltyp: {case.case_type}\n\n"
         f"Pflichtangaben:\n{angaben}\n\n"
         f"Vertrag: {case.contract.product} ({case.contract.status}), "
-        f"Selbstbehalt {case.contract.deductible}\n\n"
+        f"Selbstbehalt {case.contract.deductible} {CURRENCY}\n\n"
         f"Severity: {severity} - {severity_reason}\n\n"
         f"Nachrichten des Kunden:\n{verlauf}"
     )

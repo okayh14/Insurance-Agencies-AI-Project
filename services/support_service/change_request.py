@@ -85,6 +85,10 @@ def _abschnitt(titel: str) -> str:
 
 
 def _zeile(label: str, wert: str) -> str:
+    """Laengere Labels bekommen ein einzelnes Leerzeichen, damit der Wert
+    nie am Doppelpunkt klebt."""
+    if len(label) >= LABEL:
+        return f"{label} {wert}"
     return label.ljust(LABEL) + wert
 
 

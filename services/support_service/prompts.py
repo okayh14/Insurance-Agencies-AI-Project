@@ -1,5 +1,6 @@
 """Zwei Prompts: Auskunft (Freitext) und Extraktion einer Aenderungsmeldung (json)."""
 
+from shared.config import CURRENCY
 from shared.models import Case
 
 INQUIRY_SYSTEM = """Du beantwortest als Servicemitarbeiter einer Versicherungsagentur
@@ -30,7 +31,8 @@ def build_inquiry_prompt(case: Case) -> str:
     verlauf = "\n".join(f"- {nachricht.text}" for nachricht in case.messages)
     return (
         f"Vertrag: {case.contract.contract_number}, {case.contract.product}, "
-        f"Status {case.contract.status}, Selbstbehalt {case.contract.deductible}\n\n"
+        f"Status {case.contract.status}, "
+        f"Selbstbehalt {case.contract.deductible} {CURRENCY}\n\n"
         f"Nachrichten des Kunden:\n{verlauf}"
     )
 
