@@ -63,7 +63,9 @@ def inbound(channel: Channel, raw: dict[str, Any]) -> Any:
     logger.decision(case.case_id, f"{grund} -> {ziel}")
     logger.next_service(url)
 
-    antwort = httpx.post(url, json={"case_id": case.case_id})
+    # timeout=None: die Kette laeuft bewusst synchron durch mehrere LLM-Aufrufe,
+    # httpx wuerde sonst nach seinen 5 Sekunden Standardwert abbrechen.
+    antwort = httpx.post(url, json={"case_id": case.case_id}, timeout=None)
     antwort.raise_for_status()
     return antwort.json()
 
