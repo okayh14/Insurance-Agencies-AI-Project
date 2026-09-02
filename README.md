@@ -1,35 +1,38 @@
-# Schadenmelde-Service
+# Kurzbeschreibung
 
-Ein verteiltes System, das eingehende Kundennachrichten (Schadenmeldungen und
-Serviceanfragen) automatisiert vorverarbeitet und aufbereitet an einen Sachbearbeiter
-übergibt. Fünf FastAPI-Services in fünf Containern, die sich per Choreografie
-gegenseitig aufrufen — es gibt bewusst keinen zentralen Orchestrator.
+Ein verteiltes System, das eingehende Kundennachrichten per WhatsApp oder E-Mail
+automatisiert verarbeitet, von der ersten Nachricht bis zur fertig aufbereiteten
+Übergabe an einen Sachbearbeiter oder einer vollautomatischen Antwort an den Kunden.
 
-Alles ist von Scratch gebaut: kein echtes Bestandssystem, keine Datenbank, keine
-echten Kommunikationskanäle. Das CRM ist eine JSON-Datei, jeder Fall eine
-`case_XXXX.json`, ausgehende Nachrichten erscheinen im Terminal. Uni-MVP für eine
-Terminal-Demo, kein Produktivsystem.
+Fünf FastAPI-Services übernehmen dabei je einen Schritt: Ein Case-Service nimmt die
+Nachricht entgegen und verwaltet den Fall, ein Klassifikator bestimmt per LLM Kategorie
+und Falltyp, ein Validation-Service prüft den Kundenvertrag und fragt bei fehlenden
+Angaben automatisch beim Kunden nach, und je nach Anliegen übernimmt entweder der
+Damage-Service (Schadenfälle: Schwere-Einschätzung, Fallzusammenfassung, Mail an den
+Sachbearbeiter) oder der Support-Service (Auskünfte werden direkt beantwortet,
+Änderungsmeldungen gehen an den Sachbearbeiter).
 
-## Kontrollfluss
+Es gibt bewusst keinen zentralen Orchestrator: Jeder Service entscheidet selbst, an
+wen er als Nächstes übergibt. Die Services rufen sich per HTTP gegenseitig auf
+("Choreografie"). Ein Fall kann in einem von vier Zuständen enden: automatisch
+zugewiesen (`assigned`), automatisch abgeschlossen ohne menschliches Zutun (`closed`),
+zur manuellen Prüfung eskaliert (`manual_review`), oder er wartet auf eine Antwort
+des Kunden (`awaiting_customer_reply`).
 
-```text
-send_message.py -> POST /inbound/{channel} -> Case-Service (Adapter, inbox.jsonl, Fallerkennung)
-  -> neu        -> /classify (Klassifikator, setzt category und case_type)
-  -> wartet     -> SERVICE_URLS[awaiting_by]
-  -> bestehend  -> /validate
+Alles ist von Grund auf simuliert: kein echtes Bestandssystem, keine Datenbank, keine
+echten Kommunikationskanäle. Das CRM ist eine einzige JSON-Datei, jeder Fall eine
+eigene `case_XXXX.json`, und ausgehende Nachrichten (an Kunden wie an den
+Sachbearbeiter) erscheinen lesbar im Terminal statt tatsächlich verschickt zu werden.
+Ein MVP für eine Terminal-Demo, kein Produktivsystem.
 
-/validate (Validation) -> kein Vertrag    -> manual_review
-                       -> unvollständig   -> awaiting_customer_reply
-                       -> sonst -> Verzweigung:
-                          schaden   -> /handle-damage  -> assigned
-                          betreuung -> /handle-support -> auskunft          -> closed
-                                                       -> aenderungsmeldung -> assigned
-```
+## Architektur
 
-Drei Endzustände (`assigned`, `manual_review`, `closed`), ein Wartezustand
-(`awaiting_customer_reply`).
-
-## Die fünf Services
+- Die Kanal-Unterscheidung existiert an genau zwei Stellen: im Adapter (rein) und im
+  `channel_sender` (raus). Dazwischen ist der Kanal nur ein Feld.
+- CRM lesen geht direkt per Dateizugriff, Fälle schreiben ausschließlich über den
+  Case-Service. Datenhoheit ist nicht Ablaufsteuerung.
+- Kein Orchestrator — jeder Service entscheidet am Ende selbst per `if/else`, wer als
+  Nächstes dran ist.
 
 | Service | Container | Endpoints | Kernaufgabe |
 |---|---|---|---|
@@ -42,14 +45,14 @@ Drei Endzustände (`assigned`, `manual_review`, `closed`), ein Wartezustand
 Nur der Case-Service ist von außen erreichbar (Port 8000). Die anderen vier sprechen
 sich intern über ihre Containernamen an.
 
-Drei Sätze, die die Architektur erklären:
+## Voraussetzungen
 
-- Die Kanal-Unterscheidung existiert an genau zwei Stellen: im Adapter (rein) und im
-  `channel_sender` (raus). Dazwischen ist der Kanal nur ein Feld.
-- CRM lesen geht direkt per Dateizugriff, Fälle schreiben ausschließlich über den
-  Case-Service. Datenhoheit ist nicht Ablaufsteuerung.
-- Kein Orchestrator — jeder Service entscheidet am Ende selbst per `if/else`, wer als
-  Nächstes dran ist.
+- Docker Desktop mit `docker compose` — die fünf Services laufen ausschließlich in
+  Containern
+- Python 3.12 auf dem Host für die Skripte in `tools/`. Die brauchen nur `httpx` und
+  sprechen `localhost:8000` an, nicht die internen Docker-Adressen.
+- Ein OpenAI-API-Key. Ohne ihn läuft der Case-Service zwar an, aber der erste
+  LLM-Aufruf im Klassifikator bricht ab.
 
 ## Setup
 
@@ -60,7 +63,7 @@ cp .env.example .env
 In `.env` eintragen:
 
 - `OPENAI_API_KEY` — ohne den Schlüssel bricht der erste LLM-Aufruf ab
-- `OPENAI_MODEL` — sonst greift der Fallback aus `shared/config.py`
+- `OPENAI_MODEL` — sonst greift der Fallback aus `shared/config.py` 
 
 Die Service-URLs in `.env.example` sind die internen Docker-Adressen und bleiben
 unverändert.
@@ -78,7 +81,7 @@ sonst läuft im Container der alte Stand.
 
 Vor der ersten Nachricht abwarten, bis alle fünf Container
 `Application startup complete` gemeldet haben. Wer früher sendet, bekommt einen
-`ConnectError` aus dem Case-Service — es gibt bewusst keinen Retry.
+`ConnectError` aus dem Case-Service. Es gibt bewusst keinen Retry.
 
 ## Demo-Szenarien
 
@@ -115,10 +118,6 @@ case_0003   petra.schulz@gmx.de    betreuung   auskunft            closed
 case_0004   4917890123456          betreuung   aenderungsmeldung   assigned
 ```
 
-Szenario 1 und 3 sind das stärkste Bild der Präsentation: `show_case.py` zeigt den
-kompletten Dialog in beide Richtungen, und bei der Auskunft fehlt der
-Sachbearbeiter-Eintrag — weil dort nie einer beteiligt war.
-
 ## Werkzeuge
 
 | Befehl | Zweck |
@@ -144,17 +143,4 @@ pytest
 ```
 
 Die Testfunktionen sind bewusst leer. Sie sind ein Signal, was in einem echten Projekt
-testbar wäre — Adapter, Case-Repository, Case-Manager und Feldkatalog. Ohne
-Fake-LLM-Client wären Tests der Fachservices nur Attrappen.
-
-## Bewusst nicht gebaut
-
-- Kein Frontend, keine Authentifizierung, keine Rate Limits
-- Kein Orchestrator, kein Message Broker, kein Ingress- oder Outbound-Container
-- Keine echte Datenbank — eine sichtbare `case_0001.json` schlägt eine unsichtbare
-  DB-Tabelle
-- Kein Retry, keine Timeouts, kein Error-Handling: Fehler sollen in der Demo sichtbar
-  brechen
-- Kein Provider-Interface und kein Fake-Client für das LLM
-- Kein Rückfrage-Limit, keine Vollständigkeitsprüfung bei Änderungsmeldungen, keine
-  sensiblen Daten wie Bankverbindungen
+testbar wäre — Adapter, Case-Repository, Case-Manager und Feldkatalog.
