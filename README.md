@@ -88,24 +88,29 @@ Vor der ersten Nachricht abwarten, bis alle fünf Container
 Die Werkzeuge laufen auf dem Host gegen `localhost:8000` und brauchen nur `httpx`.
 
 ```bash
-# 1) KFZ-Kollision, K-1001 Michael Bauer -> Rückfrage -> assigned
+# 1) KFZ-Kollision, K-1001 Michael Bauer
 python tools/send_message.py whatsapp 4917123456789 "Hallo, ich hatte gestern einen Unfall mit meinem Auto."
 python tools/show_case.py 1     # Status: awaiting_customer_reply, Rückfrage im Dialog
 python tools/send_message.py whatsapp 4917123456789 "Das war am 30.08.2026 an der Kreuzung Hauptstr./Bahnhofstr. in Koeln. Ein anderes Fahrzeug ist mir an der roten Ampel hinten aufgefahren, Schaden am Heck, Auto faehrt noch. Mein Kennzeichen ist K-AB 1234."
 python tools/show_case.py 1     # Status: assigned, Sachbearbeiter-Mail im Dialog
 
-# 2) Abgelaufener Vertrag, K-1004 Julia Wagner -> manual_review
+# 2) Abgelaufener Vertrag, K-1004 Julia Wagner
 python tools/send_message.py whatsapp 4917456789012 "Ich hatte einen Unfall mit meinem Auto und moechte den Schaden melden."
 
-# 3) Deckungsfrage per E-Mail, K-1006 Petra Schulz -> closed
+# 3) Deckungsfrage per E-Mail, K-1006 Petra Schulz 
 python tools/send_message.py email petra.schulz@gmx.de "Guten Tag, wie hoch ist mein Selbstbehalt bei der Wohngebaeudeversicherung?"
 python tools/show_case.py 3     # kein Sachbearbeiter im Dialog - vollautomatisch beantwortet
 
-# 4) Umzug, K-1008 Nicole Weber -> assigned
+# 4) Umzug, K-1008 Nicole Weber
 python tools/send_message.py whatsapp 4917890123456 "Guten Tag, ich ziehe zum 01.10. um. Meine neue Adresse ist Lindenweg 12, 50667 Koeln."
 
 python tools/list_cases.py
 ```
+Alle Befehle laufen in **Terminal 2** (rechts), während in **Terminal 1** (links)
+`docker compose up --build` durchgehend mitläuft und die Verarbeitung live zeigt.
+Jede Zeile einzeln einfügen und abwarten, bis sie fertig ist, bevor die nächste folgt —
+`send_message.py` liefert erst eine Antwort, wenn der Fall komplett durch alle
+beteiligten Services gelaufen ist
 
 Erwartetes Ergebnis:
 
