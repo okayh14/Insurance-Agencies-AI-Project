@@ -56,17 +56,23 @@ sich intern über ihre Containernamen an.
 
 ## Setup
 
+**1. Repository klonen**
+```bash
+git clone https://github.com/okayh14/Insurance-Agencies-AI-Project.git
+cd Insurance-Agencies-AI-Project
+```
+
+**2. Docker Desktop starten** 
+
+**3. Umgebungsvariablen einrichten**
 ```bash
 cp .env.example .env
 ```
-
 In `.env` eintragen:
-
-- `OPENAI_API_KEY` — ohne den Schlüssel bricht der erste LLM-Aufruf ab
-- `OPENAI_MODEL` — sonst greift der Fallback aus `shared/config.py` 
-
-Die Service-URLs in `.env.example` sind die internen Docker-Adressen und bleiben
-unverändert.
+```
+OPENAI_API_KEY=dein-eigener-openai-api-key
+OPENAI_MODEL=gpt-5.6-terra
+```
 
 ## Starten
 
