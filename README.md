@@ -93,6 +93,14 @@ Vor der ersten Nachricht abwarten, bis alle fünf Container
 
 Die Werkzeuge laufen auf dem Host gegen `localhost:8000` und brauchen nur `httpx`.
 
+**Wichtig:** Terminal 2 (rechts) muss im Projektordner stehen, bevor die Befehle
+funktionieren. Falls das Terminal an anderer Stelle geöffnet wurde, zuerst:
+
+```bash
+cd Insurance-Agencies-AI-Project
+```
+
+
 ```bash
 # 1) KFZ-Kollision, K-1001 Michael Bauer
 python tools/send_message.py whatsapp 4917123456789 "Hallo, ich hatte gestern einen Unfall mit meinem Auto."
