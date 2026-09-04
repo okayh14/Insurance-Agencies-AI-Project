@@ -156,8 +156,8 @@ case_0004   4917890123456          betreuung   aenderungsmeldung   assigned
 - `data/cases/case_XXXX.json` — eine Datei je Fall, das einzige Gedächtnis des Systems
 - `data/inbox.jsonl` — jede Rohnachricht, append-only, vor jeder Verarbeitung
 
-Fälle und Inbox sind gitignored. Vor der Präsentation `data/cases/*.json` und
-`data/inbox.jsonl` löschen, dann startet die Nummerierung wieder bei `case_0001`.
+Fälle und Inbox sind gitignored. Für einen sauberen Neustart (Fallnummerierung
+beginnt wieder bei `case_0001`) `data/cases/*.json` und `data/inbox.jsonl` löschen.
 
 ## Tests
 
