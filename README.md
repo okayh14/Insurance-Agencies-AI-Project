@@ -54,6 +54,12 @@ sich intern über ihre Containernamen an.
 - Ein OpenAI-API-Key. Ohne ihn läuft der Case-Service zwar an, aber der erste
   LLM-Aufruf im Klassifikator bricht ab.
 
+## Demo-Video
+
+[Kurzes Video ansehen](https://drive.google.com/file/d/1NTa33P2vMhqqoXFQQi43Dd9nSaPaFvqF/view?usp=drive_link)
+
+Zeigt kurz das Setup und beispielhaft, wie die Anwendung anhand von Szenario 1 (KFZ-Kollision, siehe unten) bedient wird.
+
 ## Setup
 
 **1. Repository klonen**
@@ -61,7 +67,6 @@ sich intern über ihre Containernamen an.
 git clone https://github.com/okayh14/Insurance-Agencies-AI-Project.git
 cd Insurance-Agencies-AI-Project
 ```
-
 **2. Docker Desktop starten** 
 
 **3. Umgebungsvariablen einrichten**
@@ -73,7 +78,6 @@ In `.env` eintragen:
 OPENAI_API_KEY=dein-eigener-openai-api-key
 OPENAI_MODEL=gpt-5.6-terra
 ```
-
 ## Starten
 
 ```bash
@@ -152,8 +156,8 @@ case_0004   4917890123456          betreuung   aenderungsmeldung   assigned
 - `data/cases/case_XXXX.json` — eine Datei je Fall, das einzige Gedächtnis des Systems
 - `data/inbox.jsonl` — jede Rohnachricht, append-only, vor jeder Verarbeitung
 
-Fälle und Inbox sind gitignored. Vor der Präsentation `data/cases/*.json` und
-`data/inbox.jsonl` löschen, dann startet die Nummerierung wieder bei `case_0001`.
+Fälle und Inbox sind gitignored. Für einen sauberen Neustart (Fallnummerierung
+beginnt wieder bei `case_0001`) `data/cases/*.json` und `data/inbox.jsonl` löschen.
 
 ## Tests
 
