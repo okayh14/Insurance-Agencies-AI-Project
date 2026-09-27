@@ -53,7 +53,7 @@ def inbound(channel: Channel, raw: dict[str, Any]) -> Any:
         ziel = "classifier"
         grund = "neuer Fall"
     elif case.status == CaseStatus.AWAITING_CUSTOMER_REPLY:
-        ziel = case.awaiting_by
+        ziel = case.awaiting_by # -> aktuell nur validation
         grund = f"Kundenantwort erwartet von {case.awaiting_by}"
     else:
         ziel = "validation"

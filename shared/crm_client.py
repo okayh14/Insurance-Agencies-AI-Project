@@ -31,17 +31,16 @@ class CrmClient:
         """Sucht Kunden über Telefonnummer oder E-Mail.
         Unterscheidung über das Vorhandensein von '@'."""
         feld = "email" if "@" in identifier else "phone"
-        for kunde in self._load():
+        for kunde in self._load(): # alle Kunden in CRM-System durchsuchen
             if kunde[feld] == identifier:
                 return kunde
         return None
 
     def find_active_contract(
-        self, customer: dict[str, Any], case_type: str | None = None
-    ) -> dict[str, Any] | None:
+        self, customer: dict[str, Any], case_type: str | None = None) -> dict[str, Any] | None:
         """Gibt den passenden aktiven Vertrag zurück.
         Zuordnung Falltyp -> Produkt siehe Teil 2, Abschnitt 11."""
-        aktive = [v for v in customer["contracts"] if v["status"] == "active"]
+        aktive = [v for v in customer["contracts"] if v["status"] == "active"] # aktive Verträge des jeweiligen Kunden
         if not aktive:
             return None
 

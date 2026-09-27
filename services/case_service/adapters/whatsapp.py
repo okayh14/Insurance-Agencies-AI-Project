@@ -13,7 +13,7 @@ class WhatsAppAdapter(ChannelAdapter):
         "timestamp": "1788181323"}"""
 
     def to_canonical(self, raw: dict[str, Any]) -> CanonicalMessage:
-        return CanonicalMessage(
+        return CanonicalMessage( # Erzeugung eines CanonicalMessage-Objekts aus den Rohdaten    
             sender_id=raw["from"],
             channel=Channel.WHATSAPP,
             text=raw["text"]["body"],
