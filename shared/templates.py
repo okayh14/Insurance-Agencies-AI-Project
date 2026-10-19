@@ -20,7 +20,7 @@ def confirmation_damage_received(case_id: str) -> str:
     return (
         "Vielen Dank, Ihre Schadenmeldung ist bei uns eingegangen und wurde unter "
         f"der Vorgangsnummer {case_id} an unsere Schadenabteilung weitergeleitet. "
-        "Ein Sachbearbeiter meldet sich bei Ihnen."
+        "Unsere Schadenabteilung meldet sich bei Ihnen."
     )
 
 
@@ -41,7 +41,7 @@ def escalation_no_contract() -> str:
 
 
 def agent_mail_subject(case) -> str:
-    """Betreff der Sachbearbeiter-Mail.
+    """Betreff der Mail an Schadenteam (Schadenfall) oder Sachbearbeiter (Änderungsmeldung).
     z.B. 'Neuer Schadenfall case_0001 - kfz_kollision - Severity mittel'"""
     if case.category == Category.SCHADEN:
         return (

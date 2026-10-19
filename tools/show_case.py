@@ -118,6 +118,8 @@ for nachricht in fall["outbound"]:
     if nachricht["recipient_type"] == "agent":
         # Nur der Betreff - der volle Mailtext steht im Terminal-Log.
         label, text = f"-> Sachbearbeiter ({nachricht['channel']})", nachricht["subject"]
+    elif nachricht["recipient_type"] == "schadenteam":
+        label, text = f"-> Schadenteam ({nachricht['channel']})", nachricht["subject"]
     else:
         label, text = f"-> Kunde ({nachricht['channel']})", nachricht["text"]
     eintraege.append((datetime.fromisoformat(nachricht["sent_at"]), label, text))

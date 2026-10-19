@@ -10,13 +10,13 @@ Stufen:
   "mittel"  - deutlicher Sachschaden, kein Personenschaden, Sache noch nutzbar
   "hoch"    - Personenschaden moeglich, Sache unbrauchbar oder sehr hoher Schaden
 
-Die Begruendung ist ein einziger sachlicher Satz fuer den Sachbearbeiter.
+Die Begruendung ist ein einziger sachlicher Satz fuer das Schadenteam.
 
 Antworte ausschliesslich als json-Objekt in genau dieser Form:
 {"severity": "niedrig|mittel|hoch", "severity_reason": "..."}"""
 
-SUMMARY_SYSTEM = """Du schreibst die Fallzusammenfassung fuer den Sachbearbeiter
-einer Versicherungsagentur.
+SUMMARY_SYSTEM = """Du schreibst die Fallzusammenfassung fuer das Schadenteam
+einer Versicherung.
 
 Vier bis sechs Saetze, sachlich, keine Anrede, keine Aufzaehlung. Nenne den
 Schadenhergang, den Zustand der beschaedigten Sache und die Vertragslage.

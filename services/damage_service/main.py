@@ -1,4 +1,4 @@
-"""Damage-Service: Severity, Zusammenfassung, Sachbearbeiter-Mail.
+"""Damage-Service: Severity, Zusammenfassung, Mail an das Schadenteam.
 
 Tür: Endpoint. Die Arbeit steht in severity.py, summary.py und agent_mail.py.
 Endstation - hier wird kein weiterer Service gerufen."""
@@ -53,11 +53,11 @@ def handle_damage(body: dict[str, str]) -> ServiceResult:
     )
 
     kunde = crm.find_by_identifier(case.sender_id)
-    sender.send_to_agent(case, agent_mail_subject(case), build_body(case, kunde))
+    sender.send_to_schadenteam(case, agent_mail_subject(case), build_body(case, kunde))
     sender.send_to_customer(case, confirmation_damage_received(case_id))
 
     cases.set_fields(case_id, {"status": "assigned"})
-    logger.decision(case_id, "Schadenfall an Sachbearbeiter uebergeben -> assigned")
+    logger.decision(case_id, "Schadenfall an Schadenteam uebergeben -> assigned")
 
     return ServiceResult(
         case_id=case_id, service="damage", outcome="assigned", next_service=None

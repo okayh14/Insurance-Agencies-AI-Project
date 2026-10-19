@@ -1,4 +1,4 @@
-"""Sachbearbeiter-Mail beim Schadenfall. Reine Formatierung, kein LLM.
+"""Mail an das Schadenteam beim Schadenfall. Reine Formatierung, kein LLM.
 Format wörtlich nach CLAUDE.md Abschnitt 20."""
 
 import textwrap

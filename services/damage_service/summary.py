@@ -1,4 +1,4 @@
-"""Fallzusammenfassung per LLM. Prosa fuer den Sachbearbeiter."""
+"""Fallzusammenfassung per LLM. Prosa fuer das Schadenteam."""
 
 from services.damage_service.prompts import SUMMARY_SYSTEM, build_summary_prompt
 from shared.llm_client import LlmClient

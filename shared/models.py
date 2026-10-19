@@ -64,7 +64,7 @@ class InboundMessage(BaseModel):
 
 class OutboundMessage(BaseModel):
     sent_at: datetime
-    recipient_type: Literal["customer", "agent"]
+    recipient_type: Literal["customer", "agent", "schadenteam"]
     channel: Channel
     address: str
     subject: str | None = None

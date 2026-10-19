@@ -29,5 +29,6 @@ CUSTOMERS_FILE: Path = DATA_DIR / "customers.json"
 INBOX_FILE: Path = DATA_DIR / "inbox.jsonl"
 
 # --- Fachliche Konstanten ---
-AGENT_EMAIL: str = "schadenteam@axa.de"
+SCHADENTEAM_EMAIL: str = "schadenteam@axa.de"           # nur Damage-Service
+AGENTUR_EMAIL: str = "sachbearbeiter@axa-agentur.de"    # Validation (kein Vertrag), Support (Änderung)
 CURRENCY: str = "EUR"

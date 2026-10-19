@@ -6,13 +6,21 @@
 - KEIN Defensive Coding: kein try/except, kein Retry, keine Timeouts, keine Validierungsfestungen. Fehler sollen sichtbar brechen.
 - KEIN Frontend. Ausgabe ausschliesslich über Terminal-Prints.
 - Halte dich EXAKT an die Ordnerstruktur. Erfinde keine zusätzlichen Dateien, Klassen oder Abstraktionsebenen.
-- Deutsche Fachbegriffe im Code beibehalten: Schaden, Betreuung, Sachbearbeiter, Pflichtangaben, Severity, Änderungsmeldung.
+- Deutsche Fachbegriffe im Code beibehalten: Schaden, Betreuung, Sachbearbeiter, Schadenteam, Pflichtangaben, Severity, Änderungsmeldung.
 - Frag nach, statt zu raten.
 - Arbeite phasenweise. Baue nur, was in der aktuellen Phase beauftragt ist.
 - Python 3.12, FastAPI, uvicorn, pydantic v2, httpx, openai.
 
 ## 1. Was das Projekt ist
-Ein System, das eingehende Kundennachrichten (Schadenmeldungen und Serviceanfragen) automatisiert vorverarbeitet und aufbereitet an einen Sachbearbeiter übergibt. Alles von Scratch: kein echtes Bestandssystem, keine echte Datenbank, keine echten Kommunikationskanäle. Simulation über JSON-Dateien und CLI-Skripte.
+Ein System, das eingehende Kundennachrichten (Schadenmeldungen und Serviceanfragen) automatisiert vorverarbeitet und aufbereitet an einen Menschen übergibt. Alles von Scratch: kein echtes Bestandssystem, keine echte Datenbank, keine echten Kommunikationskanäle. Simulation über JSON-Dateien und CLI-Skripte.
+
+Zwei interne Empfänger, beide per E-Mail:
+| Empfänger | Adresse (config.py) | Bekommt Mails von | Anlass |
+|---|---|---|---|
+| Schadenteam (Schadenabteilung der AXA) | SCHADENTEAM_EMAIL = schadenteam@axa.de | Damage-Service | Aufbereiteter Schadenfall mit Severity und Zusammenfassung |
+| Sachbearbeiter (in der AXA-Exklusivagentur) | AGENTUR_EMAIL | Support-Service, Validation-Service | Änderungsmeldung (wird dort später im CRM eingepflegt) und manuelle Prüfung bei fehlendem Vertrag |
+
+"Sachbearbeiter" meint im ganzen Projekt ausschließlich den Sachbearbeiter der Agentur. Das Schadenteam ist kein Sachbearbeiter in diesem Sinne.
 
 ## 2. Architekturprinzipien (nicht verhandelbar)
 1. Choreografie statt Orchestrator: jeder Service entscheidet am Ende selbst per if/else, welcher Service als Nächstes gerufen wird. Keine zentrale Ablaufsteuerung.
@@ -32,7 +40,7 @@ Ein System, das eingehende Kundennachrichten (Schadenmeldungen und Serviceanfrag
 | Case-Service | case-service | POST /inbound/{channel}, GET /cases, GET /cases/{id}, PATCH /cases/{id} | Webhook, Kanal-Adapter, Rohnachricht persistieren, Fallerkennung, Datenhoheit |
 | Klassifikator | classifier-service | POST /classify | Nur bei neuem Fall: LLM bestimmt Kategorie und Typ |
 | Validation | validation-service | POST /validate | Bestandsabgleich regelbasiert, Pflichtangaben-Check LLM, ggf. Rückfrage |
-| Damage | damage-service | POST /handle-damage | Severity plus Begründung, Fallzusammenfassung, Mail an Sachbearbeiter |
+| Damage | damage-service | POST /handle-damage | Severity plus Begründung, Fallzusammenfassung, Mail an Schadenteam |
 | Support | support-service | POST /handle-support | Auskunft ODER Änderungsmeldung, Mail plus Kundenbestätigung |
 
 ## 4. Kontrollfluss
@@ -142,7 +150,7 @@ class InboundMessage(BaseModel):
 
 class OutboundMessage(BaseModel):
     sent_at: datetime
-    recipient_type: Literal["customer", "agent"]
+    recipient_type: Literal["customer", "agent", "schadenteam"]
     channel: Channel
     address: str
     subject: str | None = None
@@ -233,7 +241,7 @@ class ServiceResult(BaseModel):
 
 ## 7. Beispiel einer fertigen Fall-Akte
 ```json
-{"case_id": "case_0001", "sender_id": "4917123456789", "channel": "whatsapp", "created_at": "2026-08-31T14:22:03", "updated_at": "2026-08-31T14:26:41", "status": "assigned", "awaiting_by": null, "category": "schaden", "case_type": "kfz_kollision", "customer_number": "K-1001", "contract": {"contract_number": "V-001", "product": "KFZ Vollkasko", "status": "active", "deductible": 500}, "fields": {"collected": {"schadensdatum": "2026-08-30", "schadensort": "Kreuzung Hauptstr./Bahnhofstr., Köln", "schadenshergang": "Auffahrunfall an roter Ampel", "kennzeichen": "K-AB 1234"}, "missing": []}, "damage": {"severity": "mittel", "severity_reason": "Sachschaden am Heck, keine Personenschäden, Fahrzeug fahrbereit.", "summary": "Der Kunde meldet einen Auffahrunfall..."}, "support": null, "messages": [{"received_at": "2026-08-31T14:22:03", "channel": "whatsapp", "text": "Hallo, ich hatte gestern einen Unfall mit meinem Auto."}, {"received_at": "2026-08-31T14:26:12", "channel": "whatsapp", "text": "Das war am 30.08. an der Kreuzung..."}], "outbound": [{"sent_at": "2026-08-31T14:22:09", "recipient_type": "customer", "channel": "whatsapp", "address": "4917123456789", "subject": null, "text": "Guten Tag, für die Bearbeitung..."}, {"sent_at": "2026-08-31T14:26:41", "recipient_type": "agent", "channel": "email", "address": "schadenteam@axa.de", "subject": "Neuer Schadenfall case_0001 - kfz_kollision - Severity mittel", "text": "..."}]}
+{"case_id": "case_0001", "sender_id": "4917123456789", "channel": "whatsapp", "created_at": "2026-08-31T14:22:03", "updated_at": "2026-08-31T14:26:41", "status": "assigned", "awaiting_by": null, "category": "schaden", "case_type": "kfz_kollision", "customer_number": "K-1001", "contract": {"contract_number": "V-001", "product": "KFZ Vollkasko", "status": "active", "deductible": 500}, "fields": {"collected": {"schadensdatum": "2026-08-30", "schadensort": "Kreuzung Hauptstr./Bahnhofstr., Köln", "schadenshergang": "Auffahrunfall an roter Ampel", "kennzeichen": "K-AB 1234"}, "missing": []}, "damage": {"severity": "mittel", "severity_reason": "Sachschaden am Heck, keine Personenschäden, Fahrzeug fahrbereit.", "summary": "Der Kunde meldet einen Auffahrunfall..."}, "support": null, "messages": [{"received_at": "2026-08-31T14:22:03", "channel": "whatsapp", "text": "Hallo, ich hatte gestern einen Unfall mit meinem Auto."}, {"received_at": "2026-08-31T14:26:12", "channel": "whatsapp", "text": "Das war am 30.08. an der Kreuzung..."}], "outbound": [{"sent_at": "2026-08-31T14:22:09", "recipient_type": "customer", "channel": "whatsapp", "address": "4917123456789", "subject": null, "text": "Guten Tag, für die Bearbeitung..."}, {"sent_at": "2026-08-31T14:26:41", "recipient_type": "schadenteam", "channel": "email", "address": "schadenteam@axa.de", "subject": "Neuer Schadenfall case_0001 - kfz_kollision - Severity mittel", "text": "..."}]}
 ```
 
 ## 8. Die sieben shared/-Werkzeuge - Code-Skeletons
@@ -275,7 +283,8 @@ CUSTOMERS_FILE: Path = DATA_DIR / "customers.json"
 INBOX_FILE: Path = DATA_DIR / "inbox.jsonl"
 
 # --- Fachliche Konstanten ---
-AGENT_EMAIL: str = "schadenteam@axa.de"
+SCHADENTEAM_EMAIL: str = "schadenteam@axa.de"           # nur Damage-Service
+AGENTUR_EMAIL: str = "sachbearbeiter@axa-agentur.de"    # Validation (kein Vertrag), Support (Änderung)
 CURRENCY: str = "EUR"
 Einzige Stelle, die Umgebungsvariablen liest — jeder Name steht genau einmal. DATA_DIR mit Fallback, weil die tools/ auf dem Host laufen, wo ein relativer Pfad gilt. SERVICE_URLS macht den Rücksprung bei einer Kundenantwort zu einer Zeile statt zu einem if/else über alle Services.
 
@@ -452,7 +461,7 @@ from shared.models import Case
 
 
 class ChannelSender:
-    """Wird von Validation-Service und Support-Service genutzt.
+    """Wird von Validation-, Damage- und Support-Service genutzt.
     Braucht den CaseClient, weil jede Nachricht in outbound protokolliert wird."""
 
     def __init__(self, case_client: CaseClient, logger: ServiceLogger) -> None:
@@ -466,16 +475,23 @@ class ChannelSender:
         ...
 
     def send_to_agent(self, case: Case, subject: str, body: str) -> None:
-        """Mail an den Sachbearbeiter. Immer E-Mail an AGENT_EMAIL.
+        """Mail an den Sachbearbeiter der Agentur. Immer E-Mail an AGENTUR_EMAIL.
+        Validation (kein Vertrag) und Support (Änderungsmeldung).
         1. Terminal-Ausgabe  2. append an case.outbound"""
         ...
-Beide Methoden machen immer zwei Dinge in dieser Reihenfolge: Terminal-Ausgabe und append an case.outbound.
+
+    def send_to_schadenteam(self, case: Case, subject: str, body: str) -> None:
+        """Mail an das Schadenteam. Immer E-Mail an SCHADENTEAM_EMAIL.
+        Nur Damage-Service.
+        1. Terminal-Ausgabe  2. append an case.outbound"""
+        ...
+Alle drei Methoden machen immer zwei Dinge in dieser Reihenfolge: Terminal-Ausgabe und append an case.outbound.
 
 
 Merksatz: Der Print ist für das Publikum, der outbound-Eintrag ist für den Fall.
 
 
-Ohne Protokollierung wäre nach dem Durchlauf nur Terminal-Scrollback da. Zwei Methoden statt einer mit Empfänger-Parameter, weil sich die Semantik unterscheidet: beim Kunden ist der Kanal variabel und es gibt keinen Betreff, beim Sachbearbeiter ist der Kanal fest und der Betreff Pflicht. Der ChannelSender bekommt den CaseClient genau deshalb — damit man das Protokollieren nicht vergessen kann.
+Ohne Protokollierung wäre nach dem Durchlauf nur Terminal-Scrollback da. Eigene Methoden statt einer mit Empfänger-Parameter, weil sich die Semantik unterscheidet: beim Kunden ist der Kanal variabel und es gibt keinen Betreff, bei Sachbearbeiter und Schadenteam ist der Kanal fest und der Betreff Pflicht. Sachbearbeiter und Schadenteam sind getrennte Methoden, damit der Empfänger im Aufruf sichtbar ist und im outbound-Eintrag als eigener recipient_type steht. Der ChannelSender bekommt den CaseClient genau deshalb — damit man das Protokollieren nicht vergessen kann.
 
 8.7 templates.py
 python
@@ -507,7 +523,7 @@ def escalation_no_contract() -> str:
 
 
 def agent_mail_subject(case) -> str:
-    """Betreff der Sachbearbeiter-Mail.
+    """Betreff der Mail an Schadenteam (Schadenfall) oder Sachbearbeiter (Änderungsmeldung).
     z.B. 'Neuer Schadenfall case_0001 - kfz_kollision - Severity mittel'"""
     ...
 Funktionen statt Konstanten mit .format(), weil bei followup_missing_fields die technischen Feldnamen in lesbare Klartextfragen übersetzt und sauber verkettet werden müssen. Bewusst kein LLM für Kundennachrichten: reproduzierbar in der Live-Demo, weil kein Modell dazwischen improvisiert.
@@ -616,6 +632,7 @@ POST /validate     Body: {"case_id": "case_0001"}
     kein Kunde ODER kein aktiver Vertrag
         -> PATCH set: status = manual_review
         -> send_to_agent(Betreff "Manuelle Pruefung", Grund + Nachrichten)
+           (an den Sachbearbeiter der Agentur, NICHT an das Schadenteam)
         -> send_to_customer(escalation_no_contract())
         -> ENDE (outcome = "no_contract")
 
@@ -664,11 +681,11 @@ POST /handle-damage     Body: {"case_id": "case_0001"}
 
  3. FALLZUSAMMENFASSUNG (LLM, complete_text)
       Input: messages + fields.collected + contract
-      Ergebnis: Prosa fuer den Sachbearbeiter
+      Ergebnis: Prosa fuer das Schadenteam
 
  4. PATCH set: damage = { severity, severity_reason, summary }
 
- 5. SACHBEARBEITER-MAIL bauen
+ 5. SCHADENTEAM-MAIL bauen
       Betreff: templates.agent_mail_subject(case)
       Body:   Falldaten, Kunde + Vertrag + Selbstbehalt,
               Pflichtangaben, Severity + Begruendung,
@@ -676,7 +693,8 @@ POST /handle-damage     Body: {"case_id": "case_0001"}
       + bei severity == "hoch":
           Textbaustein "Gutachter-Einsatz pruefen"
 
- 6. send_to_agent(...)
+ 6. send_to_schadenteam(...)
+      (einziger Pfad, der an schadenteam@axa.de geht)
 
  7. send_to_customer(confirmation_damage_received(case_id))
 
@@ -713,6 +731,8 @@ POST /handle-support     Body: {"case_id": "case_0001"}
    2b. PATCH set: support = { change_type, change_values }
    2c. send_to_agent(Betreff "Aenderungsmeldung",
                      Typ + Werte + Kunde)
+         <- an den Sachbearbeiter der Agentur, der die Aenderung
+            spaeter im CRM einpflegt. NICHT an das Schadenteam.
    2d. send_to_customer(confirmation_change_request(change_type))
    2e. PATCH set: status = assigned
    2f. ENDE (outcome = "assigned")
@@ -992,7 +1012,7 @@ Erwartete Ausgabe:
  14:26:12  <- Kunde (whatsapp)        Das war am 30.08. an der
                                       Kreuzung Hauptstr./Bahnhofstr.
                                       in Koeln, Auffahrunfall.
- 14:26:41  -> Sachbearbeiter (email)  Neuer Schadenfall case_0001 -
+ 14:26:41  -> Schadenteam (email)     Neuer Schadenfall case_0001 -
                                       kfz_kollision - Severity mittel
  14:26:42  -> Kunde (whatsapp)        Vielen Dank, Ihre Schadenmeldung
                                       ist bei uns eingegangen.
@@ -1082,7 +1102,7 @@ docker compose up nicht im Vordergrund von Claude Code starten — der Befehl en
 - "Kein Orchestrator - Choreografie per if/else."
 
 ## 18. Was bewusst NICHT gebaut wird
-Kein Frontend. Kein Orchestrator. Kein Ingress-Container. Kein Outbound-Container. Kein CRM-Container. Keine echte Datenbank (kein PostgreSQL, kein SQLite). Kein Message Broker. Kein Retry, keine Timeouts, kein Error-Handling. Kein Provider-Interface für das LLM. Kein FakeLlmClient. Kein Rückfrage-Limit (kein followup_count). Keine Terminvorschläge für Gutachter. Kein PDF-Report. Keine Vollständigkeitsprüfung bei Änderungsmeldungen. Keine sensiblen Daten wie Bankverbindung. Keine echte Sachbearbeiter-Verfügbarkeitslogik und keine Mapping-Tabelle (feste Adresse schadenteam@axa.de). Kein Caching im CrmClient. Keine Token-Zählung, kein Kostenlogging. Keine pydantic-Modelle für CRM-Daten (rohe Dictionaries). Kein Enum für case_type und awaiting_by. Keine schnelle Webhook-Bestätigung (bewusst synchron). Keine Authentifizierung, keine Rate Limits.
+Kein Frontend. Kein Orchestrator. Kein Ingress-Container. Kein Outbound-Container. Kein CRM-Container. Keine echte Datenbank (kein PostgreSQL, kein SQLite). Kein Message Broker. Kein Retry, keine Timeouts, kein Error-Handling. Kein Provider-Interface für das LLM. Kein FakeLlmClient. Kein Rückfrage-Limit (kein followup_count). Keine Terminvorschläge für Gutachter. Kein PDF-Report. Keine Vollständigkeitsprüfung bei Änderungsmeldungen. Keine sensiblen Daten wie Bankverbindung. Keine echte Sachbearbeiter-Verfügbarkeitslogik und keine Mapping-Tabelle (zwei feste Adressen: schadenteam@axa.de für Schadenfälle, AGENTUR_EMAIL für den Sachbearbeiter der Agentur). Kein Caching im CrmClient. Keine Token-Zählung, kein Kostenlogging. Keine pydantic-Modelle für CRM-Daten (rohe Dictionaries). Kein Enum für case_type und awaiting_by. Keine schnelle Webhook-Bestätigung (bewusst synchron). Keine Authentifizierung, keine Rate Limits.
 
 ## 19. Entstehungsgeschichte und Begründungen
 Dieser Abschnitt hilft beim Bauen nicht — er ist für die Präsentation und Verteidigung.
@@ -1108,12 +1128,12 @@ crm-mock als sechster Container (erwogen)	CrmClient mit direktem Dateizugriff	Re
 Echte WhatsApp API und IMAP/SMTP (erwogen)	Adapter echt, Transport simuliert	Echter Versand würde bedeuten, in der Demo zwischen Terminal, Handy und Postfach zu wechseln
 Rückfrage-Limit followup_count (erwogen)	Gestrichen	Die Schleife ist manuell getrieben — eine Endlosschleife kann strukturell nicht entstehen
 Dokumentenanforderung, Sentiment-Analyse, Rückrufwunsch, Antwortentwurf (alle erwogen)	Änderungsmeldung (Adresse, Fahrzeugwechsel, Kündigung)	Bewusst ohne sensible Daten, ohne Vollständigkeitsprüfung, ohne Rückfrage-Kreislauf
-Weitere bewusste MVP-Vereinfachungen: Kein Retry- oder Fehlerbehandlungskonzept (Annahme für die Demo: es funktioniert). Sachbearbeiter-Zuordnung über eine feste Adresse statt echter Verfügbarkeitslogik oder Mapping-Tabelle.
+Weitere bewusste MVP-Vereinfachungen: Kein Retry- oder Fehlerbehandlungskonzept (Annahme für die Demo: es funktioniert). Empfänger-Zuordnung über zwei feste Adressen (Schadenteam für Schadenfälle, Sachbearbeiter der Agentur für Änderungsmeldungen und manuelle Prüfung) statt echter Verfügbarkeitslogik oder Mapping-Tabelle.
 
 Happy Path Fokus
 
-## 20. Mockup der Sachbearbeiter-Mail
-So sieht die Mail aus, die der Damage-Service in Schritt 5 und 6 baut. Übernimm dieses Format, erfinde kein eigenes.
+## 20. Mockup der Mails an Schadenteam und Sachbearbeiter
+So sieht die Mail an das Schadenteam aus, die der Damage-Service in Schritt 5 und 6 baut. Übernimm dieses Format, erfinde kein eigenes.
 
 An:      schadenteam@axa.de
 Betreff: Neuer Schadenfall case_0001 - kfz_kollision - Severity mittel
@@ -1179,10 +1199,10 @@ Begruendung:    Personenschaden moeglich, Fahrzeug nicht
 
 HINWEIS: Aufgrund der hohen Schadenschwere Gutachter-Einsatz
          pruefen.
-Mail bei Änderungsmeldungen (Support-Service)
+Mail bei Änderungsmeldungen (Support-Service, an den Sachbearbeiter der Agentur)
 Deutlich kürzer — keine Severity, keine Zusammenfassung. Beides sind Schadenkonzepte.
 
-An:      schadenteam@axa.de
+An:      sachbearbeiter@axa-agentur.de
 Betreff: Aenderungsmeldung case_0004 - adresse
 
 ------------------------------------------------------------
